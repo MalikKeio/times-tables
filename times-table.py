@@ -10,9 +10,13 @@ parser.add_argument('N', metavar='N', default=100, nargs='?', type=int,
 parser.add_argument('-t', '--times', nargs=2, default=[2, 2], type=float,
                     help="Min and max of the 'times' factor.")
 parser.add_argument('-s', '--speed', type=float, default=10, help="The higher the faster. 100 is very fast, 1 is quite slow.")
-parser.add_argument('-w', '--write', type=str, help="Write the output in a mp4 file.")
+parser.add_argument('-o', '--output', type=str, help="Output as a mp4 file.")
 
 args = parser.parse_args()
+
+if args.output is not None:
+    import matplotlib
+    matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 import matplotlib.collections as mc
@@ -51,14 +55,28 @@ class AnimatedTimesTable(TimesTable):
         TimesTable.__init__(self, times[0], N)
         self._interval = interval
         self._speed = speed
+        self._frame_count = 0
 
     def _animate(self, t):
         self.set_times(t)
+        if self._headless:
+            if self._frame_count != self._frame_number:
+                print("Frame: %d/%d\r" % (self._frame_count, self._frame_number), end='')
+            else:
+                print("DONE                      ")
+        self._frame_count += 1
 
     def add_to_axis(self, ax, **kwargs):
+        filename = kwargs.get('output', None)
+        self._headless = filename is not None
         TimesTable.add_to_axis(self, ax, **kwargs)
         arange = np.arange(self._times[0], self._times[1], (self._times[1] - self._times[0]) * self._speed)
-        animation.FuncAnimation(ax.figure, self._animate, arange, interval=self._interval)
+        self._frame_number = 1 / self._speed
+        ani = animation.FuncAnimation(ax.figure, self._animate, arange, interval=self._interval)
+        if self._headless:
+            Writer = animation.writers['ffmpeg']
+            writer = Writer(fps=25, metadata=dict(artist='Malik Olivier Boussejra'), bitrate=20000)
+            ani.save(filename, writer=writer)
 
 
 
@@ -70,8 +88,6 @@ if args.times[0] == args.times[1] or args.speed == 0:
 else:
     from matplotlib import animation
     times_table = AnimatedTimesTable(args.times, args.N, args.speed/1000)
-    times_table.add_to_axis(ax)
-    if args.write is None:
+    times_table.add_to_axis(ax, output=args.output)
+    if args.output is None:
         plt.show()
-    else:
-        raise "Not implemented"
