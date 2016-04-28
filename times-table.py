@@ -11,12 +11,15 @@ parser.add_argument('-t', '--times', nargs=2, default=[2, 2], type=float,
                     help="Min and max of the 'times' factor.")
 parser.add_argument('-s', '--speed', type=float, default=10, help="The higher the faster. 100 is very fast, 1 is quite slow.")
 parser.add_argument('-o', '--output', type=str, help="Output as a mp4 file.")
+parser.add_argument('-b', '--bitrate', type=float, default=8192, help="Bitrate (bit/s) for mp4 output. Default is 8192.")
 
 args = parser.parse_args()
 
 if args.output is not None:
     import matplotlib
     matplotlib.use("Agg")
+    if args.bitrate is not None:
+        matplotlib.rcParams['animation.bitrate'] = args.bitrate
 
 import matplotlib.pyplot as plt
 import matplotlib.collections as mc
@@ -75,7 +78,7 @@ class AnimatedTimesTable(TimesTable):
         ani = animation.FuncAnimation(ax.figure, self._animate, arange, interval=self._interval)
         if self._headless:
             Writer = animation.writers['ffmpeg']
-            writer = Writer(fps=25, metadata=dict(artist='Malik Olivier Boussejra'), bitrate=20000)
+            writer = Writer(fps=25, metadata=dict(artist='Malik Olivier Boussejra'))
             ani.save(filename, writer=writer)
 
 
