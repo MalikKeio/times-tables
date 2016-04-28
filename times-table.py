@@ -1,10 +1,21 @@
 #!/usr/bin/env python3
+import argparse
+
+parser = argparse.ArgumentParser(description="Create Times Table!")
+parser.add_argument('N', metavar='N', default=100, nargs='?', type=int,
+                    help="Number of iterations (the highest, the prettiest). "
+                    "If N is too high, you may only see a uniform big ball"
+                    "because of aliasing depending on your screen resolution."
+                    "Values between 10 and 1000 should work well, default is 100.")
+parser.add_argument('-t', '--times', nargs=2, default=[2, 2], type=float,
+                    help="Min and max of the 'times' factor.")
+
+args = parser.parse_args()
+
 import matplotlib.pyplot as plt
 import matplotlib.collections as mc
 import numpy as np
 
-N = 100
-times = 2
 
 ax = plt.axes()
 ax.set_aspect('equal')
@@ -25,7 +36,10 @@ class TimesTable:
     def add_to_axis(self, ax, **kwargs):
         ax.add_collection(self._line_collection, kwargs)
 
-times_table = TimesTable(times, N)
-times_table.add_to_axis(ax)
+if args.times[0] == args.times[1]:
+    times_table = TimesTable(args.times[0], args.N)
+    times_table.add_to_axis(ax)
 
-plt.show()
+    plt.show()
+else:
+    raise "Not implemented"
