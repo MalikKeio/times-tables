@@ -52,17 +52,13 @@ class AnimatedTimesTable(TimesTable):
         self._interval = interval
         self._speed = speed
 
-    def _init(self):
-        return self._line_collection,
     def _animate(self, t):
         self.set_times(t)
-        return self._line_collection,
 
     def add_to_axis(self, ax, **kwargs):
         TimesTable.add_to_axis(self, ax, **kwargs)
         arange = np.arange(self._times[0], self._times[1], (self._times[1] - self._times[0]) * self._speed)
-        ani = animation.FuncAnimation(ax.figure, self._animate, arange,
-                                      init_func=self._init, interval=self._interval, blit=True)
+        animation.FuncAnimation(ax.figure, self._animate, arange, interval=self._interval)
 
 
 
